@@ -1,26 +1,31 @@
 import "firebase/firestore";
 import firebase from "firebase";
 import { useRef, useState } from "react";
+firebase.initializeApp({
+  apiKey: "AIzaSyBFossw0q8WMYjjC9iq8kLiadpEMblzbsA",
+  authDomain: "webrtc-chat-room.firebaseapp.com",
+  projectId: "webrtc-chat-room",
+  storageBucket: "webrtc-chat-room.appspot.com",
+  messagingSenderId: "1082970144288",
+  appId: "1:1082970144288:web:8cca73182fd3b76e490645",
+});
+
+const fireStore = firebase.firestore();
+
+const servers = {
+  iceServers: [
+    {
+      urls: ["stun:stun1.l.google.com:19302", "stun:stun2.l.google.com:19302"],
+    },
+  ],
+  iceCandidatePoolSize: 10,
+};
+
+const pc = new RTCPeerConnection(servers);
+let localStream = null;
+let remoteStream = null;
 
 const ChatRoom = () => {
-  const fireStore = firebase.firestore();
-
-  const servers = {
-    iceServers: [
-      {
-        urls: [
-          "stun:stun1.l.google.com:19302",
-          "stun:stun2.l.google.com:19302",
-        ],
-      },
-    ],
-    iceCandidatePoolSize: 10,
-  };
-
-  const pc = new RTCPeerConnection(servers);
-  let localStream = null;
-  let remoteStream = null;
-
   const [callButton, setCallButton] = useState(true);
   const [answerButton, setAnswerButton] = useState(true);
   const [webcamButton, setWebcamButton] = useState(false);
@@ -28,6 +33,7 @@ const ChatRoom = () => {
 
   const remoteVideoRef = useRef(null);
   const webcamVideoRef = useRef(null);
+  // const callInputRef = useRef("");
 
   const [callInput, setCallInput] = useState("");
 
@@ -115,6 +121,7 @@ const ChatRoom = () => {
 
   const handleAnswerClick = async () => {
     const callId = callInput;
+    console.log(callId);
     const callDoc = fireStore.collection("calls").doc(callId);
     const answerCandidates = callDoc.collection("answerCandidates");
     const offerCandidates = callDoc.collection("offerCandidates");
@@ -175,7 +182,11 @@ const ChatRoom = () => {
       <h2>3. Join a Call</h2>
       <p>Answer the call from a different browser window or device</p>
 
-      <input defaultValue={callInput} />
+      <input
+        value={callInput}
+        onChange={(event) => setCallInput(event.target.value)}
+        // ref={callInputRef}
+      />
       <button onClick={handleAnswerClick} disabled={answerButton}>
         Answer
       </button>
